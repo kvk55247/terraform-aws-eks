@@ -81,8 +81,8 @@ pipeline {
                         }       
                     }
                 }
-                stages('acm alb') {
-                    stage('Trigger acm') {
+            stages('acm alb') {
+                stage('Trigger acm') {
                         steps {
                             script {
                                 build job: '60-acm',
@@ -90,8 +90,8 @@ pipeline {
                                 propagate: false // even sg fails vpc will not be affected
                             }       
                         }
-                    }
-                    stage('Trigger alb') {
+                }
+                stage('Trigger alb') {
                         steps {
                             script {
                                 build job: '70-frontend-alb',
@@ -99,7 +99,7 @@ pipeline {
                                 propagate: false // even sg fails vpc will not be affected
                             }       
                         }
-                    }
+                }
                 }
 
                   }      
