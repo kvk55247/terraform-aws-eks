@@ -81,7 +81,7 @@ pipeline {
                         }       
                     }
                 }
-            stages('acm alb') {
+            stage('acm alb') {
                 stage('Trigger acm') {
                         steps {
                             script {
