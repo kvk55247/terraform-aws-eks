@@ -3,19 +3,21 @@ module "eks" {
   version = "~> 21.0" # this is module version
 
   name               = "${var.project}-${var.environment}"
-  kubernetes_version = "1.32"
+  kubernetes_version = "1.29"
 
-  addons = {
-    coredns                = {}
-    eks-pod-identity-agent = {
-      before_compute = true
-    }
-    kube-proxy             = {}
-    vpc-cni                = {
-      before_compute = true
-    }
-    metrics-server= {}
+ addons = {
+  coredns                = {}
+  eks-pod-identity-agent = {
+    before_compute = true
   }
+  kube-proxy             = {}
+  vpc-cni                = {
+    before_compute = true
+    resolve_conflicts_on_create = "OVERWRITE"
+    resolve_conflicts_on_update = "OVERWRITE"
+  }
+  metrics-server         = {}
+}
 
   # Optional
   endpoint_public_access = false
@@ -29,27 +31,16 @@ module "eks" {
 
   create_node_security_group = false
   create_security_group = false
-
   security_group_id = local.eks_control_plane_sg_id
   node_security_group_id = local.eks_node_sg_id
-  
 
   # EKS Managed Node Group(s)
   eks_managed_node_groups = {
-    /* blue = {
+    blue = {
       # Starting on 1.30, AL2023 is the default AMI type for EKS managed node groups
-      ami_type       = "AL2023_x86_64_STANDARD"
+      ami_type       = "AL2023_x86_64_STANDARD" # user name is ec2-user
       instance_types = ["m5.xlarge"]
-
-      min_size     = 2
-      max_size     = 10
-      desired_size = 2
-    } */
-    green = {
-      # Starting on 1.30, AL2023 is the default AMI type for EKS managed node groups
-      ami_type       = "AL2023_x86_64_STANDARD"
-      instance_types = ["m5.xlarge"]
-
+      
       min_size     = 2
       max_size     = 10
       desired_size = 2
@@ -58,19 +49,35 @@ module "eks" {
         AmazonEBS = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
         AmazonEFS = "arn:aws:iam::aws:policy/service-role/AmazonEFSCSIDriverPolicy"
         AmazonEKSLoad = "arn:aws:iam::aws:policy/AmazonEKSLoadBalancingPolicy"
+      } 
+    }
+    green = {
+      # Starting on 1.30, AL2023 is the default AMI type for EKS managed node groups
+      ami_type       = "AL2023_x86_64_STANDARD" # user name is ec2-user
+      instance_types = ["m5.xlarge"]
+      
+      min_size     = 1
+      max_size     = 2
+      desired_size = 2
+
+      # wait_for_nodes = false
+
+      iam_role_additional_policies = {
+        AmazonEBS = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+        AmazonEFS = "arn:aws:iam::aws:policy/service-role/AmazonEFSCSIDriverPolicy"
+        AmazonEKSLoad = "arn:aws:iam::aws:policy/AmazonEKSLoadBalancingPolicy"
       }
 
-    taints = {
-      update ={
-        key = "upgrade"
-        value = "true"
-        effect = "NO_SCHEDULE"
+      taints = {
+        upgrade = {
+          key = "upgrade"
+          value  = "true"
+          effect = "NO_SCHEDULE"
+        }
       }
-    }
     }
   }
 
- 
   tags = merge(
     local.common_tags,
     {
