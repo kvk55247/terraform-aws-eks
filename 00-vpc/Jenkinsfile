@@ -62,13 +62,20 @@ pipeline {
             }
         }
         stage('Terraform Destroy') {
-            steps {
-                input message: "⚠️ Are you sure you want to DESTROY infrastructure?"
-                sh '''
-                    terraform destroy -auto-approve
-                '''
-            }
+                steps {
+                    input message: "⚠️ Are you sure you want to DESTROY infrastructure?"
+
+                    script {
+                        withAWS(credentials: 'aws-creds', region: 'us-east-1') {
+                            sh '''
+                                cd 00-vpc/
+                                terraform destroy -auto-approve
+                            '''
+                        }
+                    }
+                }
         }
+
     
         stage('Trigger Sg') {
             steps {
