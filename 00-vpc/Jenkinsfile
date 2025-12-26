@@ -69,7 +69,7 @@ pipeline {
                 '''
             }
         }
-    }
+    
         stage('Trigger Sg') {
             steps {
                 script {
