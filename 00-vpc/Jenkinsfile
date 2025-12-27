@@ -61,7 +61,7 @@ pipeline {
                 }
             }
         }
-        stage('Terraform Destroy') {
+       /*  stage('Terraform Destroy') {
                 steps {
                     input message: "⚠️ Are you sure you want to DESTROY infrastructure?"
 
@@ -75,7 +75,7 @@ pipeline {
                     }
                 }
         }
-
+ */
     
         stage('Trigger Sg') {
             steps {
